@@ -1,0 +1,4705 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "generatedFor": "Disaster City Simulator",
+    "coordinateUnit": "meter",
+    "synthetic": true,
+    "currency": "JPY",
+    "populationSnapshot": "weekday_afternoon",
+    "populationProfileInterpretation": "Four mutually exclusive groups; mobilityImpaired includes all ages and is excluded from the other three groups. Round agent counts within each building to preserve occupancy.",
+    "occupancyInterpretation": "People present at this snapshot, not registered residents. Generate each person once from building occupancy, including occupants of shelter buildings.",
+    "shelterCapacityInterpretation": "Total simultaneous capacity, not initially available spaces. Initial shelter occupancy is zero; occupants of associated buildings consume capacity when admitted.",
+    "roadInterpretation": "All edges are bidirectional. Travel from each building center to its nearestRoadNode, and from shelter roadNode to shelter position, includes the access distance.",
+    "groundZoneBoundaryRule": "Use min-inclusive, max-exclusive bounds; include the outer city boundary at 1000. Ground y is zero everywhere.",
+    "riskInterpretation": "All resistance, risk, intensity, amplification and probability values are synthetic educational parameters, not engineering or casualty predictions.",
+    "collapseThresholdInterpretation": "Normalized accumulated structural damage triggering collapse, not a direct ground-intensity threshold.",
+    "evacuationDelayInterpretation": "evacuationDelaySeconds is the baseline delay after shaking ends, before outdoor evacuation begins; subsequent movement and queueing are additional.",
+    "defaultWalkingSpeedMetersPerSecond": {
+      "children": 0.9,
+      "adults": 1.2,
+      "elderly": 0.65,
+      "mobilityImpaired": 0.3
+    },
+    "groundIntensityInterpretation": "Subtract intensityFalloff times epicentral distance in meters from baseIntensity, then multiply by shakingAmplification and clamp to [0,1].",
+    "scenarioProbabilityInterpretation": "aftershockProbability is sampled once for one possible aftershock within 600 seconds after the main shock. fireIgnitionProbability is the baseline per-building ignition chance sampled once per main shock, before material and damage modifiers."
+  },
+  "city": {
+    "id": "aoba_city",
+    "name": "Aoba City",
+    "width": 1000,
+    "depth": 1000,
+    "approximatePopulation": 3000
+  },
+  "districts": [
+    {
+      "id": "district_residential",
+      "name": "Northwest Residential District",
+      "type": "residential",
+      "bounds": {
+        "minX": 0,
+        "maxX": 300,
+        "minZ": 0,
+        "maxZ": 550
+      },
+      "riskFactors": {
+        "earthquake": 0.4,
+        "fire": 0.35,
+        "evacuationDifficulty": 0.4
+      }
+    },
+    {
+      "id": "district_station",
+      "name": "Aoba Station District",
+      "type": "station",
+      "bounds": {
+        "minX": 300,
+        "maxX": 550,
+        "minZ": 0,
+        "maxZ": 300
+      },
+      "riskFactors": {
+        "earthquake": 0.32,
+        "fire": 0.35,
+        "evacuationDifficulty": 0.58
+      }
+    },
+    {
+      "id": "district_office",
+      "name": "East Business District",
+      "type": "office",
+      "bounds": {
+        "minX": 550,
+        "maxX": 1000,
+        "minZ": 0,
+        "maxZ": 300
+      },
+      "riskFactors": {
+        "earthquake": 0.24,
+        "fire": 0.2,
+        "evacuationDifficulty": 0.65
+      }
+    },
+    {
+      "id": "district_commercial",
+      "name": "Aoba Shopping District",
+      "type": "commercial",
+      "bounds": {
+        "minX": 300,
+        "maxX": 550,
+        "minZ": 300,
+        "maxZ": 550
+      },
+      "riskFactors": {
+        "earthquake": 0.45,
+        "fire": 0.55,
+        "evacuationDifficulty": 0.62
+      }
+    },
+    {
+      "id": "district_hospital",
+      "name": "Aoba Medical District",
+      "type": "hospital",
+      "bounds": {
+        "minX": 550,
+        "maxX": 800,
+        "minZ": 300,
+        "maxZ": 550
+      },
+      "riskFactors": {
+        "earthquake": 0.3,
+        "fire": 0.22,
+        "evacuationDifficulty": 0.85
+      }
+    },
+    {
+      "id": "district_school",
+      "name": "East School District",
+      "type": "school",
+      "bounds": {
+        "minX": 800,
+        "maxX": 1000,
+        "minZ": 300,
+        "maxZ": 800
+      },
+      "riskFactors": {
+        "earthquake": 0.18,
+        "fire": 0.18,
+        "evacuationDifficulty": 0.22
+      }
+    },
+    {
+      "id": "district_old_town",
+      "name": "Old Residential District",
+      "type": "old_residential",
+      "bounds": {
+        "minX": 0,
+        "maxX": 550,
+        "minZ": 550,
+        "maxZ": 1000
+      },
+      "riskFactors": {
+        "earthquake": 0.9,
+        "fire": 0.92,
+        "evacuationDifficulty": 0.85
+      }
+    },
+    {
+      "id": "district_park",
+      "name": "Central Park District",
+      "type": "park",
+      "bounds": {
+        "minX": 550,
+        "maxX": 800,
+        "minZ": 550,
+        "maxZ": 800
+      },
+      "riskFactors": {
+        "earthquake": 0.1,
+        "fire": 0.08,
+        "evacuationDifficulty": 0.1
+      }
+    },
+    {
+      "id": "district_industrial",
+      "name": "South Workshop District",
+      "type": "factory",
+      "bounds": {
+        "minX": 550,
+        "maxX": 1000,
+        "minZ": 800,
+        "maxZ": 1000
+      },
+      "riskFactors": {
+        "earthquake": 0.65,
+        "fire": 0.75,
+        "evacuationDifficulty": 0.65
+      }
+    }
+  ],
+  "groundZones": [
+    {
+      "id": "ground_zone_001",
+      "name": "Northwest Terrace",
+      "type": "normal_ground",
+      "bounds": {
+        "minX": 0,
+        "maxX": 550,
+        "minZ": 0,
+        "maxZ": 550
+      },
+      "shakingAmplification": 1.0
+    },
+    {
+      "id": "ground_zone_002",
+      "name": "Old Town Alluvial Ground",
+      "type": "soft_ground",
+      "bounds": {
+        "minX": 0,
+        "maxX": 550,
+        "minZ": 550,
+        "maxZ": 1000
+      },
+      "shakingAmplification": 1.25
+    },
+    {
+      "id": "ground_zone_003",
+      "name": "Eastern Firm Terrace",
+      "type": "firm_ground",
+      "bounds": {
+        "minX": 550,
+        "maxX": 1000,
+        "minZ": 0,
+        "maxZ": 800
+      },
+      "shakingAmplification": 0.82
+    },
+    {
+      "id": "ground_zone_004",
+      "name": "Southern Reclaimed Ground",
+      "type": "soft_ground",
+      "bounds": {
+        "minX": 550,
+        "maxX": 1000,
+        "minZ": 800,
+        "maxZ": 1000
+      },
+      "shakingAmplification": 1.15
+    }
+  ],
+  "roadNetwork": {
+    "nodes": [
+      {
+        "id": "road_node_001",
+        "position": {
+          "x": 50,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_002",
+        "position": {
+          "x": 175,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_003",
+        "position": {
+          "x": 300,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_004",
+        "position": {
+          "x": 425,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_005",
+        "position": {
+          "x": 550,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_006",
+        "position": {
+          "x": 675,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_007",
+        "position": {
+          "x": 800,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_008",
+        "position": {
+          "x": 875,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_009",
+        "position": {
+          "x": 950,
+          "z": 50
+        }
+      },
+      {
+        "id": "road_node_010",
+        "position": {
+          "x": 50,
+          "z": 175
+        }
+      },
+      {
+        "id": "road_node_011",
+        "position": {
+          "x": 300,
+          "z": 175
+        }
+      },
+      {
+        "id": "road_node_012",
+        "position": {
+          "x": 550,
+          "z": 175
+        }
+      },
+      {
+        "id": "road_node_013",
+        "position": {
+          "x": 800,
+          "z": 175
+        }
+      },
+      {
+        "id": "road_node_014",
+        "position": {
+          "x": 950,
+          "z": 175
+        }
+      },
+      {
+        "id": "road_node_015",
+        "position": {
+          "x": 50,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_016",
+        "position": {
+          "x": 175,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_017",
+        "position": {
+          "x": 300,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_018",
+        "position": {
+          "x": 425,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_019",
+        "position": {
+          "x": 465,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_020",
+        "position": {
+          "x": 550,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_021",
+        "position": {
+          "x": 675,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_022",
+        "position": {
+          "x": 800,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_023",
+        "position": {
+          "x": 875,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_024",
+        "position": {
+          "x": 950,
+          "z": 300
+        }
+      },
+      {
+        "id": "road_node_025",
+        "position": {
+          "x": 465,
+          "z": 365
+        }
+      },
+      {
+        "id": "road_node_026",
+        "position": {
+          "x": 50,
+          "z": 425
+        }
+      },
+      {
+        "id": "road_node_027",
+        "position": {
+          "x": 300,
+          "z": 425
+        }
+      },
+      {
+        "id": "road_node_028",
+        "position": {
+          "x": 465,
+          "z": 425
+        }
+      },
+      {
+        "id": "road_node_029",
+        "position": {
+          "x": 550,
+          "z": 425
+        }
+      },
+      {
+        "id": "road_node_030",
+        "position": {
+          "x": 800,
+          "z": 425
+        }
+      },
+      {
+        "id": "road_node_031",
+        "position": {
+          "x": 950,
+          "z": 425
+        }
+      },
+      {
+        "id": "road_node_032",
+        "position": {
+          "x": 465,
+          "z": 490
+        }
+      },
+      {
+        "id": "road_node_033",
+        "position": {
+          "x": 50,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_034",
+        "position": {
+          "x": 175,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_035",
+        "position": {
+          "x": 300,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_036",
+        "position": {
+          "x": 425,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_037",
+        "position": {
+          "x": 465,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_038",
+        "position": {
+          "x": 550,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_039",
+        "position": {
+          "x": 675,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_040",
+        "position": {
+          "x": 800,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_041",
+        "position": {
+          "x": 875,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_042",
+        "position": {
+          "x": 950,
+          "z": 550
+        }
+      },
+      {
+        "id": "road_node_043",
+        "position": {
+          "x": 175,
+          "z": 585
+        }
+      },
+      {
+        "id": "road_node_044",
+        "position": {
+          "x": 425,
+          "z": 585
+        }
+      },
+      {
+        "id": "road_node_045",
+        "position": {
+          "x": 175,
+          "z": 621
+        }
+      },
+      {
+        "id": "road_node_046",
+        "position": {
+          "x": 425,
+          "z": 621
+        }
+      },
+      {
+        "id": "road_node_047",
+        "position": {
+          "x": 175,
+          "z": 657
+        }
+      },
+      {
+        "id": "road_node_048",
+        "position": {
+          "x": 425,
+          "z": 657
+        }
+      },
+      {
+        "id": "road_node_049",
+        "position": {
+          "x": 50,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_050",
+        "position": {
+          "x": 175,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_051",
+        "position": {
+          "x": 300,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_052",
+        "position": {
+          "x": 425,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_053",
+        "position": {
+          "x": 550,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_054",
+        "position": {
+          "x": 800,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_055",
+        "position": {
+          "x": 950,
+          "z": 675
+        }
+      },
+      {
+        "id": "road_node_056",
+        "position": {
+          "x": 175,
+          "z": 693
+        }
+      },
+      {
+        "id": "road_node_057",
+        "position": {
+          "x": 425,
+          "z": 693
+        }
+      },
+      {
+        "id": "road_node_058",
+        "position": {
+          "x": 800,
+          "z": 725
+        }
+      },
+      {
+        "id": "road_node_059",
+        "position": {
+          "x": 175,
+          "z": 729
+        }
+      },
+      {
+        "id": "road_node_060",
+        "position": {
+          "x": 425,
+          "z": 729
+        }
+      },
+      {
+        "id": "road_node_061",
+        "position": {
+          "x": 175,
+          "z": 765
+        }
+      },
+      {
+        "id": "road_node_062",
+        "position": {
+          "x": 425,
+          "z": 765
+        }
+      },
+      {
+        "id": "road_node_063",
+        "position": {
+          "x": 50,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_064",
+        "position": {
+          "x": 175,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_065",
+        "position": {
+          "x": 300,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_066",
+        "position": {
+          "x": 425,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_067",
+        "position": {
+          "x": 550,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_068",
+        "position": {
+          "x": 675,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_069",
+        "position": {
+          "x": 800,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_070",
+        "position": {
+          "x": 875,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_071",
+        "position": {
+          "x": 950,
+          "z": 800
+        }
+      },
+      {
+        "id": "road_node_072",
+        "position": {
+          "x": 50,
+          "z": 875
+        }
+      },
+      {
+        "id": "road_node_073",
+        "position": {
+          "x": 175,
+          "z": 875
+        }
+      },
+      {
+        "id": "road_node_074",
+        "position": {
+          "x": 300,
+          "z": 875
+        }
+      },
+      {
+        "id": "road_node_075",
+        "position": {
+          "x": 550,
+          "z": 875
+        }
+      },
+      {
+        "id": "road_node_076",
+        "position": {
+          "x": 800,
+          "z": 875
+        }
+      },
+      {
+        "id": "road_node_077",
+        "position": {
+          "x": 950,
+          "z": 875
+        }
+      },
+      {
+        "id": "road_node_078",
+        "position": {
+          "x": 50,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_079",
+        "position": {
+          "x": 175,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_080",
+        "position": {
+          "x": 300,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_081",
+        "position": {
+          "x": 425,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_082",
+        "position": {
+          "x": 550,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_083",
+        "position": {
+          "x": 675,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_084",
+        "position": {
+          "x": 800,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_085",
+        "position": {
+          "x": 875,
+          "z": 950
+        }
+      },
+      {
+        "id": "road_node_086",
+        "position": {
+          "x": 950,
+          "z": 950
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "road_edge_001",
+        "from": "road_node_001",
+        "to": "road_node_002",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_002",
+        "from": "road_node_002",
+        "to": "road_node_003",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_003",
+        "from": "road_node_003",
+        "to": "road_node_004",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_004",
+        "from": "road_node_004",
+        "to": "road_node_005",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_005",
+        "from": "road_node_005",
+        "to": "road_node_006",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_006",
+        "from": "road_node_006",
+        "to": "road_node_007",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_007",
+        "from": "road_node_007",
+        "to": "road_node_008",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_008",
+        "from": "road_node_008",
+        "to": "road_node_009",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_009",
+        "from": "road_node_015",
+        "to": "road_node_016",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_010",
+        "from": "road_node_016",
+        "to": "road_node_017",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_011",
+        "from": "road_node_017",
+        "to": "road_node_018",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_012",
+        "from": "road_node_018",
+        "to": "road_node_019",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_013",
+        "from": "road_node_019",
+        "to": "road_node_020",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_014",
+        "from": "road_node_020",
+        "to": "road_node_021",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_015",
+        "from": "road_node_021",
+        "to": "road_node_022",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_016",
+        "from": "road_node_022",
+        "to": "road_node_023",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_017",
+        "from": "road_node_023",
+        "to": "road_node_024",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_018",
+        "from": "road_node_033",
+        "to": "road_node_034",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_019",
+        "from": "road_node_034",
+        "to": "road_node_035",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_020",
+        "from": "road_node_035",
+        "to": "road_node_036",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_021",
+        "from": "road_node_036",
+        "to": "road_node_037",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_022",
+        "from": "road_node_037",
+        "to": "road_node_038",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_023",
+        "from": "road_node_038",
+        "to": "road_node_039",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_024",
+        "from": "road_node_039",
+        "to": "road_node_040",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_025",
+        "from": "road_node_040",
+        "to": "road_node_041",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_026",
+        "from": "road_node_041",
+        "to": "road_node_042",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_027",
+        "from": "road_node_063",
+        "to": "road_node_064",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_028",
+        "from": "road_node_064",
+        "to": "road_node_065",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_029",
+        "from": "road_node_065",
+        "to": "road_node_066",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_030",
+        "from": "road_node_066",
+        "to": "road_node_067",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_031",
+        "from": "road_node_067",
+        "to": "road_node_068",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_032",
+        "from": "road_node_068",
+        "to": "road_node_069",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_033",
+        "from": "road_node_069",
+        "to": "road_node_070",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_034",
+        "from": "road_node_070",
+        "to": "road_node_071",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_035",
+        "from": "road_node_078",
+        "to": "road_node_079",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_036",
+        "from": "road_node_079",
+        "to": "road_node_080",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_037",
+        "from": "road_node_080",
+        "to": "road_node_081",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_038",
+        "from": "road_node_081",
+        "to": "road_node_082",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_039",
+        "from": "road_node_082",
+        "to": "road_node_083",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_040",
+        "from": "road_node_083",
+        "to": "road_node_084",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_041",
+        "from": "road_node_084",
+        "to": "road_node_085",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_042",
+        "from": "road_node_085",
+        "to": "road_node_086",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_043",
+        "from": "road_node_001",
+        "to": "road_node_010",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_044",
+        "from": "road_node_010",
+        "to": "road_node_015",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_045",
+        "from": "road_node_015",
+        "to": "road_node_026",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_046",
+        "from": "road_node_026",
+        "to": "road_node_033",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_047",
+        "from": "road_node_033",
+        "to": "road_node_049",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_048",
+        "from": "road_node_049",
+        "to": "road_node_063",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_049",
+        "from": "road_node_063",
+        "to": "road_node_072",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_050",
+        "from": "road_node_072",
+        "to": "road_node_078",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_051",
+        "from": "road_node_003",
+        "to": "road_node_011",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_052",
+        "from": "road_node_011",
+        "to": "road_node_017",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_053",
+        "from": "road_node_017",
+        "to": "road_node_027",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_054",
+        "from": "road_node_027",
+        "to": "road_node_035",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_055",
+        "from": "road_node_035",
+        "to": "road_node_051",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_056",
+        "from": "road_node_051",
+        "to": "road_node_065",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_057",
+        "from": "road_node_065",
+        "to": "road_node_074",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_058",
+        "from": "road_node_074",
+        "to": "road_node_080",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_059",
+        "from": "road_node_005",
+        "to": "road_node_012",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_060",
+        "from": "road_node_012",
+        "to": "road_node_020",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_061",
+        "from": "road_node_020",
+        "to": "road_node_029",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_062",
+        "from": "road_node_029",
+        "to": "road_node_038",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_063",
+        "from": "road_node_038",
+        "to": "road_node_053",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_064",
+        "from": "road_node_053",
+        "to": "road_node_067",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_065",
+        "from": "road_node_067",
+        "to": "road_node_075",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_066",
+        "from": "road_node_075",
+        "to": "road_node_082",
+        "width": 18,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_067",
+        "from": "road_node_007",
+        "to": "road_node_013",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_068",
+        "from": "road_node_013",
+        "to": "road_node_022",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_069",
+        "from": "road_node_022",
+        "to": "road_node_030",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_070",
+        "from": "road_node_030",
+        "to": "road_node_040",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_071",
+        "from": "road_node_040",
+        "to": "road_node_054",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_072",
+        "from": "road_node_054",
+        "to": "road_node_058",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_073",
+        "from": "road_node_058",
+        "to": "road_node_069",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_074",
+        "from": "road_node_069",
+        "to": "road_node_076",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_075",
+        "from": "road_node_076",
+        "to": "road_node_084",
+        "width": 16,
+        "roadType": "main",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_076",
+        "from": "road_node_009",
+        "to": "road_node_014",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_077",
+        "from": "road_node_014",
+        "to": "road_node_024",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_078",
+        "from": "road_node_024",
+        "to": "road_node_031",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_079",
+        "from": "road_node_031",
+        "to": "road_node_042",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_080",
+        "from": "road_node_042",
+        "to": "road_node_055",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_081",
+        "from": "road_node_055",
+        "to": "road_node_071",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_082",
+        "from": "road_node_071",
+        "to": "road_node_077",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_083",
+        "from": "road_node_077",
+        "to": "road_node_086",
+        "width": 8,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_084",
+        "from": "road_node_034",
+        "to": "road_node_043",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_085",
+        "from": "road_node_043",
+        "to": "road_node_045",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_086",
+        "from": "road_node_045",
+        "to": "road_node_047",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_087",
+        "from": "road_node_047",
+        "to": "road_node_050",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_088",
+        "from": "road_node_050",
+        "to": "road_node_056",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_089",
+        "from": "road_node_056",
+        "to": "road_node_059",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_090",
+        "from": "road_node_059",
+        "to": "road_node_061",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_091",
+        "from": "road_node_061",
+        "to": "road_node_064",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_092",
+        "from": "road_node_036",
+        "to": "road_node_044",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_093",
+        "from": "road_node_044",
+        "to": "road_node_046",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_094",
+        "from": "road_node_046",
+        "to": "road_node_048",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_095",
+        "from": "road_node_048",
+        "to": "road_node_052",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_096",
+        "from": "road_node_052",
+        "to": "road_node_057",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_097",
+        "from": "road_node_057",
+        "to": "road_node_060",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_098",
+        "from": "road_node_060",
+        "to": "road_node_062",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_099",
+        "from": "road_node_062",
+        "to": "road_node_066",
+        "width": 3.2,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_100",
+        "from": "road_node_049",
+        "to": "road_node_050",
+        "width": 4,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_101",
+        "from": "road_node_050",
+        "to": "road_node_051",
+        "width": 4,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_102",
+        "from": "road_node_051",
+        "to": "road_node_052",
+        "width": 4,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_103",
+        "from": "road_node_052",
+        "to": "road_node_053",
+        "width": 4,
+        "roadType": "alley",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_104",
+        "from": "road_node_019",
+        "to": "road_node_025",
+        "width": 6,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_105",
+        "from": "road_node_025",
+        "to": "road_node_028",
+        "width": 6,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_106",
+        "from": "road_node_028",
+        "to": "road_node_032",
+        "width": 6,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_107",
+        "from": "road_node_032",
+        "to": "road_node_037",
+        "width": 6,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_108",
+        "from": "road_node_064",
+        "to": "road_node_073",
+        "width": 4.5,
+        "roadType": "local",
+        "walkable": true
+      },
+      {
+        "id": "road_edge_109",
+        "from": "road_node_073",
+        "to": "road_node_079",
+        "width": 4.5,
+        "roadType": "local",
+        "walkable": true
+      }
+    ]
+  },
+  "buildings": [
+    {
+      "id": "building_001",
+      "name": "Sakura Court",
+      "type": "residential",
+      "position": {
+        "x": 85,
+        "z": 110
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2003,
+      "occupancy": 2,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.59,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_001",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_002",
+      "name": "Maple House",
+      "type": "residential",
+      "position": {
+        "x": 130,
+        "z": 110
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 12.4,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2004,
+      "occupancy": 16,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.8,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1344000000,
+      "nearestRoadNode": "road_node_002",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 88
+    },
+    {
+      "id": "building_003",
+      "name": "Aoba Terrace",
+      "type": "residential",
+      "position": {
+        "x": 175,
+        "z": 110
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 15.5,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2005,
+      "occupancy": 22,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.83,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1680000000,
+      "nearestRoadNode": "road_node_002",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 100
+    },
+    {
+      "id": "building_004",
+      "name": "Hinoki Homes",
+      "type": "residential",
+      "position": {
+        "x": 220,
+        "z": 110
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2006,
+      "occupancy": 14,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.71,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_002",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_005",
+      "name": "North Garden Apartments",
+      "type": "residential",
+      "position": {
+        "x": 265,
+        "z": 110
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 12.4,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2007,
+      "occupancy": 18,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.89,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1344000000,
+      "nearestRoadNode": "road_node_003",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 88
+    },
+    {
+      "id": "building_006",
+      "name": "Azalea Court",
+      "type": "residential",
+      "position": {
+        "x": 85,
+        "z": 225
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2008,
+      "occupancy": 16,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.63,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_010",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_007",
+      "name": "Keyaki Heights",
+      "type": "residential",
+      "position": {
+        "x": 130,
+        "z": 225
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 9.3,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2009,
+      "occupancy": 24,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.8,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1008000000,
+      "nearestRoadNode": "road_node_016",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 76
+    },
+    {
+      "id": "building_008",
+      "name": "Komorebi Apartments",
+      "type": "residential",
+      "position": {
+        "x": 175,
+        "z": 225
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 12.4,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2010,
+      "occupancy": 20,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.83,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1344000000,
+      "nearestRoadNode": "road_node_016",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 88
+    },
+    {
+      "id": "building_009",
+      "name": "Wisteria Homes",
+      "type": "residential",
+      "position": {
+        "x": 220,
+        "z": 225
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2011,
+      "occupancy": 14,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.59,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_016",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_010",
+      "name": "Midori Residence",
+      "type": "residential",
+      "position": {
+        "x": 265,
+        "z": 225
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 9.3,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2012,
+      "occupancy": 22,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.89,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1008000000,
+      "nearestRoadNode": "road_node_011",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 76
+    },
+    {
+      "id": "building_011",
+      "name": "South Sakura Homes",
+      "type": "residential",
+      "position": {
+        "x": 85,
+        "z": 375
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2013,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.67,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_026",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_012",
+      "name": "Camellia Court",
+      "type": "residential",
+      "position": {
+        "x": 130,
+        "z": 375
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 15.5,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2014,
+      "occupancy": 18,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.8,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1680000000,
+      "nearestRoadNode": "road_node_016",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 100
+    },
+    {
+      "id": "building_013",
+      "name": "West Aoba Heights",
+      "type": "residential",
+      "position": {
+        "x": 175,
+        "z": 375
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 9.3,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2015,
+      "occupancy": 26,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.83,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1008000000,
+      "nearestRoadNode": "road_node_016",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 76
+    },
+    {
+      "id": "building_014",
+      "name": "Olive House",
+      "type": "residential",
+      "position": {
+        "x": 220,
+        "z": 375
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2016,
+      "occupancy": 16,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.63,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_016",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_015",
+      "name": "Kusunoki Apartments",
+      "type": "residential",
+      "position": {
+        "x": 265,
+        "z": 375
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 15.5,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2017,
+      "occupancy": 20,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.89,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1680000000,
+      "nearestRoadNode": "road_node_027",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 100
+    },
+    {
+      "id": "building_016",
+      "name": "Plum Garden Homes",
+      "type": "residential",
+      "position": {
+        "x": 85,
+        "z": 490
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2018,
+      "occupancy": 14,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.71,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_033",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_017",
+      "name": "Haruno Residence",
+      "type": "residential",
+      "position": {
+        "x": 130,
+        "z": 490
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 12.4,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2019,
+      "occupancy": 22,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.8,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1344000000,
+      "nearestRoadNode": "road_node_034",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 88
+    },
+    {
+      "id": "building_018",
+      "name": "Cedar Court",
+      "type": "residential",
+      "position": {
+        "x": 175,
+        "z": 490
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 15.5,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2020,
+      "occupancy": 18,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.83,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1680000000,
+      "nearestRoadNode": "road_node_034",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 100
+    },
+    {
+      "id": "building_019",
+      "name": "Sunny Aoba Homes",
+      "type": "residential",
+      "position": {
+        "x": 220,
+        "z": 490
+      },
+      "size": {
+        "width": 24,
+        "depth": 28
+      },
+      "height": 6.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 2021,
+      "occupancy": 16,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.67,
+      "fireResistance": 0.5,
+      "collapseThreshold": 0.64,
+      "replacementValue": 296000000,
+      "nearestRoadNode": "road_node_034",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 64
+    },
+    {
+      "id": "building_020",
+      "name": "Mizuki Apartments",
+      "type": "residential",
+      "position": {
+        "x": 265,
+        "z": 490
+      },
+      "size": {
+        "width": 30,
+        "depth": 32
+      },
+      "height": 12.4,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2022,
+      "occupancy": 22,
+      "populationProfile": {
+        "children": 0.14,
+        "adults": 0.54,
+        "elderly": 0.26,
+        "mobilityImpaired": 0.06
+      },
+      "seismicResistance": 0.89,
+      "fireResistance": 0.86,
+      "collapseThreshold": 0.82,
+      "replacementValue": 1344000000,
+      "nearestRoadNode": "road_node_035",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 88
+    },
+    {
+      "id": "building_021",
+      "name": "Aoba West Civic Center",
+      "type": "public",
+      "position": {
+        "x": 115,
+        "z": 425
+      },
+      "size": {
+        "width": 60,
+        "depth": 46
+      },
+      "height": 13,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2017,
+      "occupancy": 80,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.91,
+      "fireResistance": 0.93,
+      "collapseThreshold": 0.9,
+      "replacementValue": 2898000000,
+      "nearestRoadNode": "road_node_026",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 55
+    },
+    {
+      "id": "building_022",
+      "name": "Aoba West Library",
+      "type": "public",
+      "position": {
+        "x": 235,
+        "z": 425
+      },
+      "size": {
+        "width": 42,
+        "depth": 40
+      },
+      "height": 10,
+      "floors": 2,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2008,
+      "occupancy": 30,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.83,
+      "fireResistance": 0.9,
+      "collapseThreshold": 0.85,
+      "replacementValue": 1176000000,
+      "nearestRoadNode": "road_node_027",
+      "districtId": "district_residential",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 50
+    },
+    {
+      "id": "building_023",
+      "name": "Aoba Station Building",
+      "type": "station",
+      "position": {
+        "x": 425,
+        "z": 225
+      },
+      "size": {
+        "width": 80,
+        "depth": 46
+      },
+      "height": 24,
+      "floors": 5,
+      "construction": "steel_reinforced_concrete",
+      "yearBuilt": 2019,
+      "occupancy": 180,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.76,
+        "elderly": 0.13,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.91,
+      "fireResistance": 0.91,
+      "collapseThreshold": 0.9,
+      "replacementValue": 7728000000,
+      "nearestRoadNode": "road_node_018",
+      "districtId": "district_station",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 105
+    },
+    {
+      "id": "building_024",
+      "name": "Station West Shopping Hall",
+      "type": "commercial",
+      "position": {
+        "x": 350,
+        "z": 225
+      },
+      "size": {
+        "width": 36,
+        "depth": 40
+      },
+      "height": 21,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2004,
+      "occupancy": 70,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.78,
+      "fireResistance": 0.82,
+      "collapseThreshold": 0.81,
+      "replacementValue": 2520000000,
+      "nearestRoadNode": "road_node_011",
+      "districtId": "district_station",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 100
+    },
+    {
+      "id": "building_025",
+      "name": "Aoba Station Hotel",
+      "type": "commercial",
+      "position": {
+        "x": 500,
+        "z": 225
+      },
+      "size": {
+        "width": 42,
+        "depth": 40
+      },
+      "height": 56,
+      "floors": 16,
+      "construction": "steel_reinforced_concrete",
+      "yearBuilt": 2018,
+      "occupancy": 80,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.9,
+      "fireResistance": 0.9,
+      "collapseThreshold": 0.9,
+      "replacementValue": 11290000000,
+      "nearestRoadNode": "road_node_012",
+      "districtId": "district_station",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 340
+    },
+    {
+      "id": "building_026",
+      "name": "North Gate Shops",
+      "type": "commercial",
+      "position": {
+        "x": 350,
+        "z": 100
+      },
+      "size": {
+        "width": 38,
+        "depth": 36
+      },
+      "height": 14,
+      "floors": 3,
+      "construction": "steel",
+      "yearBuilt": 1994,
+      "occupancy": 50,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.67,
+      "fireResistance": 0.64,
+      "collapseThreshold": 0.71,
+      "replacementValue": 1231000000,
+      "nearestRoadNode": "road_node_003",
+      "districtId": "district_station",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 75
+    },
+    {
+      "id": "building_027",
+      "name": "Aoba Bus Terminal Hall",
+      "type": "public",
+      "position": {
+        "x": 355,
+        "z": 165
+      },
+      "size": {
+        "width": 42,
+        "depth": 36
+      },
+      "height": 10,
+      "floors": 2,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2012,
+      "occupancy": 25,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.83,
+      "fireResistance": 0.88,
+      "collapseThreshold": 0.85,
+      "replacementValue": 1058000000,
+      "nearestRoadNode": "road_node_011",
+      "districtId": "district_station",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 60
+    },
+    {
+      "id": "building_028",
+      "name": "Station East Offices",
+      "type": "office",
+      "position": {
+        "x": 505,
+        "z": 105
+      },
+      "size": {
+        "width": 36,
+        "depth": 36
+      },
+      "height": 40,
+      "floors": 11,
+      "construction": "steel_reinforced_concrete",
+      "yearBuilt": 2021,
+      "occupancy": 65,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.93,
+      "fireResistance": 0.92,
+      "collapseThreshold": 0.92,
+      "replacementValue": 5988000000,
+      "nearestRoadNode": "road_node_005",
+      "districtId": "district_station",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 250
+    },
+    {
+      "id": "building_029",
+      "name": "Aoba Tower",
+      "type": "office",
+      "position": {
+        "x": 610,
+        "z": 110
+      },
+      "size": {
+        "width": 50,
+        "depth": 48
+      },
+      "height": 78,
+      "floors": 20,
+      "construction": "steel_reinforced_concrete",
+      "yearBuilt": 2022,
+      "occupancy": 95,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.94,
+      "fireResistance": 0.95,
+      "collapseThreshold": 0.94,
+      "replacementValue": 20160000000,
+      "nearestRoadNode": "road_node_005",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 420
+    },
+    {
+      "id": "building_030",
+      "name": "East Terrace Tower",
+      "type": "office",
+      "position": {
+        "x": 705,
+        "z": 110
+      },
+      "size": {
+        "width": 58,
+        "depth": 46
+      },
+      "height": 58,
+      "floors": 15,
+      "construction": "steel_reinforced_concrete",
+      "yearBuilt": 2016,
+      "occupancy": 80,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.9,
+      "fireResistance": 0.92,
+      "collapseThreshold": 0.91,
+      "replacementValue": 16808000000,
+      "nearestRoadNode": "road_node_006",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 330
+    },
+    {
+      "id": "building_031",
+      "name": "Aoba Technology Center",
+      "type": "office",
+      "position": {
+        "x": 610,
+        "z": 230
+      },
+      "size": {
+        "width": 50,
+        "depth": 52
+      },
+      "height": 43,
+      "floors": 11,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2015,
+      "occupancy": 60,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.87,
+      "fireResistance": 0.9,
+      "collapseThreshold": 0.88,
+      "replacementValue": 10010000000,
+      "nearestRoadNode": "road_node_012",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 250
+    },
+    {
+      "id": "building_032",
+      "name": "East Business Annex",
+      "type": "office",
+      "position": {
+        "x": 710,
+        "z": 230
+      },
+      "size": {
+        "width": 55,
+        "depth": 44
+      },
+      "height": 35,
+      "floors": 9,
+      "construction": "steel",
+      "yearBuilt": 2007,
+      "occupancy": 50,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.78,
+      "fireResistance": 0.79,
+      "collapseThreshold": 0.82,
+      "replacementValue": 6534000000,
+      "nearestRoadNode": "road_node_021",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 210
+    },
+    {
+      "id": "building_033",
+      "name": "Higashi Financial Center",
+      "type": "office",
+      "position": {
+        "x": 850,
+        "z": 110
+      },
+      "size": {
+        "width": 44,
+        "depth": 48
+      },
+      "height": 50,
+      "floors": 13,
+      "construction": "steel_reinforced_concrete",
+      "yearBuilt": 2020,
+      "occupancy": 60,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.92,
+      "fireResistance": 0.94,
+      "collapseThreshold": 0.92,
+      "replacementValue": 11532000000,
+      "nearestRoadNode": "road_node_008",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 295
+    },
+    {
+      "id": "building_034",
+      "name": "Aoba Design Studios",
+      "type": "office",
+      "position": {
+        "x": 905,
+        "z": 230
+      },
+      "size": {
+        "width": 40,
+        "depth": 44
+      },
+      "height": 32,
+      "floors": 8,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2011,
+      "occupancy": 40,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.84,
+      "fireResistance": 0.87,
+      "collapseThreshold": 0.85,
+      "replacementValue": 4928000000,
+      "nearestRoadNode": "road_node_014",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 190
+    },
+    {
+      "id": "building_035",
+      "name": "Business District Dining Hall",
+      "type": "commercial",
+      "position": {
+        "x": 855,
+        "z": 230
+      },
+      "size": {
+        "width": 36,
+        "depth": 44
+      },
+      "height": 25,
+      "floors": 6,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2000,
+      "occupancy": 35,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.77,
+      "fireResistance": 0.82,
+      "collapseThreshold": 0.81,
+      "replacementValue": 3326000000,
+      "nearestRoadNode": "road_node_023",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 135
+    },
+    {
+      "id": "building_036",
+      "name": "East Gate Services",
+      "type": "commercial",
+      "position": {
+        "x": 915,
+        "z": 110
+      },
+      "size": {
+        "width": 40,
+        "depth": 48
+      },
+      "height": 18,
+      "floors": 4,
+      "construction": "steel",
+      "yearBuilt": 1998,
+      "occupancy": 30,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.72,
+      "fireResistance": 0.71,
+      "collapseThreshold": 0.76,
+      "replacementValue": 2304000000,
+      "nearestRoadNode": "road_node_009",
+      "districtId": "district_office",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 90
+    },
+    {
+      "id": "building_037",
+      "name": "Aoba Department Store",
+      "type": "commercial",
+      "position": {
+        "x": 350,
+        "z": 365
+      },
+      "size": {
+        "width": 38,
+        "depth": 28
+      },
+      "height": 18.0,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 1996,
+      "occupancy": 60,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.75,
+      "fireResistance": 0.82,
+      "collapseThreshold": 0.79,
+      "replacementValue": 1862000000,
+      "nearestRoadNode": "road_node_027",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 140
+    },
+    {
+      "id": "building_038",
+      "name": "Central Shopping Hall",
+      "type": "commercial",
+      "position": {
+        "x": 425,
+        "z": 365
+      },
+      "size": {
+        "width": 38,
+        "depth": 28
+      },
+      "height": 14.4,
+      "floors": 4,
+      "construction": "steel",
+      "yearBuilt": 1989,
+      "occupancy": 85,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.61,
+      "fireResistance": 0.61,
+      "collapseThreshold": 0.68,
+      "replacementValue": 1277000000,
+      "nearestRoadNode": "road_node_025",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 125
+    },
+    {
+      "id": "building_039",
+      "name": "Hana Supermarket",
+      "type": "commercial",
+      "position": {
+        "x": 505,
+        "z": 365
+      },
+      "size": {
+        "width": 32,
+        "depth": 28
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1979,
+      "occupancy": 65,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.48,
+      "fireResistance": 0.36,
+      "collapseThreshold": 0.56,
+      "replacementValue": 394000000,
+      "nearestRoadNode": "road_node_025",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 95
+    },
+    {
+      "id": "building_040",
+      "name": "Aoba Cinema",
+      "type": "commercial",
+      "position": {
+        "x": 350,
+        "z": 425
+      },
+      "size": {
+        "width": 38,
+        "depth": 36
+      },
+      "height": 18.0,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 1999,
+      "occupancy": 30,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.75,
+      "fireResistance": 0.82,
+      "collapseThreshold": 0.79,
+      "replacementValue": 2394000000,
+      "nearestRoadNode": "road_node_027",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 140
+    },
+    {
+      "id": "building_041",
+      "name": "Market Street Arcade",
+      "type": "commercial",
+      "position": {
+        "x": 425,
+        "z": 425
+      },
+      "size": {
+        "width": 38,
+        "depth": 36
+      },
+      "height": 14.4,
+      "floors": 4,
+      "construction": "steel",
+      "yearBuilt": 1992,
+      "occupancy": 40,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.61,
+      "fireResistance": 0.61,
+      "collapseThreshold": 0.68,
+      "replacementValue": 1642000000,
+      "nearestRoadNode": "road_node_028",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 125
+    },
+    {
+      "id": "building_042",
+      "name": "Aoba Dining House",
+      "type": "commercial",
+      "position": {
+        "x": 505,
+        "z": 425
+      },
+      "size": {
+        "width": 32,
+        "depth": 36
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1982,
+      "occupancy": 35,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.48,
+      "fireResistance": 0.36,
+      "collapseThreshold": 0.56,
+      "replacementValue": 507000000,
+      "nearestRoadNode": "road_node_028",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 95
+    },
+    {
+      "id": "building_043",
+      "name": "West Retail Court",
+      "type": "commercial",
+      "position": {
+        "x": 350,
+        "z": 490
+      },
+      "size": {
+        "width": 38,
+        "depth": 36
+      },
+      "height": 18.0,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2002,
+      "occupancy": 40,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.75,
+      "fireResistance": 0.82,
+      "collapseThreshold": 0.79,
+      "replacementValue": 2394000000,
+      "nearestRoadNode": "road_node_035",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 140
+    },
+    {
+      "id": "building_044",
+      "name": "South Shopping Center",
+      "type": "commercial",
+      "position": {
+        "x": 425,
+        "z": 490
+      },
+      "size": {
+        "width": 38,
+        "depth": 36
+      },
+      "height": 14.4,
+      "floors": 4,
+      "construction": "steel",
+      "yearBuilt": 1995,
+      "occupancy": 45,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.61,
+      "fireResistance": 0.61,
+      "collapseThreshold": 0.68,
+      "replacementValue": 1642000000,
+      "nearestRoadNode": "road_node_032",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 125
+    },
+    {
+      "id": "building_045",
+      "name": "Market Clinic and Shops",
+      "type": "commercial",
+      "position": {
+        "x": 505,
+        "z": 490
+      },
+      "size": {
+        "width": 32,
+        "depth": 36
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1985,
+      "occupancy": 30,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.48,
+      "fireResistance": 0.36,
+      "collapseThreshold": 0.56,
+      "replacementValue": 507000000,
+      "nearestRoadNode": "road_node_032",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 95
+    },
+    {
+      "id": "building_046",
+      "name": "Market Street Grocer",
+      "type": "commercial",
+      "position": {
+        "x": 425,
+        "z": 333
+      },
+      "size": {
+        "width": 42,
+        "depth": 18
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "steel",
+      "yearBuilt": 1984,
+      "occupancy": 20,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.72,
+        "elderly": 0.15,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.57,
+      "fireResistance": 0.55,
+      "collapseThreshold": 0.63,
+      "replacementValue": 454000000,
+      "nearestRoadNode": "road_node_018",
+      "districtId": "district_commercial",
+      "groundZoneId": "ground_zone_001",
+      "evacuationDelaySeconds": 60
+    },
+    {
+      "id": "building_047",
+      "name": "Aoba General Hospital",
+      "type": "hospital",
+      "position": {
+        "x": 640,
+        "z": 415
+      },
+      "size": {
+        "width": 100,
+        "depth": 100
+      },
+      "height": 36,
+      "floors": 8,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2019,
+      "occupancy": 220,
+      "populationProfile": {
+        "children": 0.04,
+        "adults": 0.34,
+        "elderly": 0.12,
+        "mobilityImpaired": 0.5
+      },
+      "seismicResistance": 0.93,
+      "fireResistance": 0.96,
+      "collapseThreshold": 0.94,
+      "replacementValue": 28000000000,
+      "nearestRoadNode": "road_node_029",
+      "districtId": "district_hospital",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 360
+    },
+    {
+      "id": "building_048",
+      "name": "Aoba Outpatient Center",
+      "type": "hospital",
+      "position": {
+        "x": 735,
+        "z": 355
+      },
+      "size": {
+        "width": 62,
+        "depth": 52
+      },
+      "height": 17,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2014,
+      "occupancy": 50,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.45,
+        "elderly": 0.22,
+        "mobilityImpaired": 0.25
+      },
+      "seismicResistance": 0.88,
+      "fireResistance": 0.94,
+      "collapseThreshold": 0.9,
+      "replacementValue": 4514000000,
+      "nearestRoadNode": "road_node_021",
+      "districtId": "district_hospital",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 180
+    },
+    {
+      "id": "building_049",
+      "name": "Aoba Rehabilitation Center",
+      "type": "hospital",
+      "position": {
+        "x": 735,
+        "z": 455
+      },
+      "size": {
+        "width": 62,
+        "depth": 58
+      },
+      "height": 15,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2006,
+      "occupancy": 60,
+      "populationProfile": {
+        "children": 0.02,
+        "adults": 0.23,
+        "elderly": 0.2,
+        "mobilityImpaired": 0.55
+      },
+      "seismicResistance": 0.8,
+      "fireResistance": 0.91,
+      "collapseThreshold": 0.85,
+      "replacementValue": 3776000000,
+      "nearestRoadNode": "road_node_030",
+      "districtId": "district_hospital",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 420
+    },
+    {
+      "id": "building_050",
+      "name": "Medical Supply Center",
+      "type": "public",
+      "position": {
+        "x": 640,
+        "z": 510
+      },
+      "size": {
+        "width": 50,
+        "depth": 28
+      },
+      "height": 8,
+      "floors": 2,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2018,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.0,
+        "adults": 0.85,
+        "elderly": 0.1,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.9,
+      "fireResistance": 0.93,
+      "collapseThreshold": 0.91,
+      "replacementValue": 980000000,
+      "nearestRoadNode": "road_node_039",
+      "districtId": "district_hospital",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 65
+    },
+    {
+      "id": "building_051",
+      "name": "Aoba East Primary School",
+      "type": "school",
+      "position": {
+        "x": 875,
+        "z": 410
+      },
+      "size": {
+        "width": 92,
+        "depth": 75
+      },
+      "height": 16,
+      "floors": 4,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2016,
+      "occupancy": 190,
+      "populationProfile": {
+        "children": 0.88,
+        "adults": 0.1,
+        "elderly": 0.01,
+        "mobilityImpaired": 0.01
+      },
+      "seismicResistance": 0.92,
+      "fireResistance": 0.93,
+      "collapseThreshold": 0.92,
+      "replacementValue": 9660000000,
+      "nearestRoadNode": "road_node_030",
+      "districtId": "district_school",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 95
+    },
+    {
+      "id": "building_052",
+      "name": "East Primary School Gymnasium",
+      "type": "school",
+      "position": {
+        "x": 875,
+        "z": 500
+      },
+      "size": {
+        "width": 72,
+        "depth": 45
+      },
+      "height": 12,
+      "floors": 1,
+      "construction": "steel",
+      "yearBuilt": 2017,
+      "occupancy": 20,
+      "populationProfile": {
+        "children": 0.75,
+        "adults": 0.22,
+        "elderly": 0.01,
+        "mobilityImpaired": 0.02
+      },
+      "seismicResistance": 0.88,
+      "fireResistance": 0.87,
+      "collapseThreshold": 0.88,
+      "replacementValue": 972000000,
+      "nearestRoadNode": "road_node_041",
+      "districtId": "district_school",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 50
+    },
+    {
+      "id": "building_053",
+      "name": "Aoba East Secondary School",
+      "type": "school",
+      "position": {
+        "x": 875,
+        "z": 635
+      },
+      "size": {
+        "width": 92,
+        "depth": 85
+      },
+      "height": 20,
+      "floors": 5,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2020,
+      "occupancy": 150,
+      "populationProfile": {
+        "children": 0.88,
+        "adults": 0.1,
+        "elderly": 0.01,
+        "mobilityImpaired": 0.01
+      },
+      "seismicResistance": 0.94,
+      "fireResistance": 0.94,
+      "collapseThreshold": 0.94,
+      "replacementValue": 13685000000,
+      "nearestRoadNode": "road_node_041",
+      "districtId": "district_school",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 110
+    },
+    {
+      "id": "building_054",
+      "name": "East Secondary School Gymnasium",
+      "type": "school",
+      "position": {
+        "x": 875,
+        "z": 725
+      },
+      "size": {
+        "width": 76,
+        "depth": 48
+      },
+      "height": 13,
+      "floors": 1,
+      "construction": "steel",
+      "yearBuilt": 2020,
+      "occupancy": 25,
+      "populationProfile": {
+        "children": 0.72,
+        "adults": 0.24,
+        "elderly": 0.02,
+        "mobilityImpaired": 0.02
+      },
+      "seismicResistance": 0.91,
+      "fireResistance": 0.89,
+      "collapseThreshold": 0.9,
+      "replacementValue": 1094000000,
+      "nearestRoadNode": "road_node_058",
+      "districtId": "district_school",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 50
+    },
+    {
+      "id": "building_055",
+      "name": "Aoba School Lunch Center",
+      "type": "public",
+      "position": {
+        "x": 875,
+        "z": 770
+      },
+      "size": {
+        "width": 48,
+        "depth": 25
+      },
+      "height": 9,
+      "floors": 2,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2015,
+      "occupancy": 15,
+      "populationProfile": {
+        "children": 0.0,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.04
+      },
+      "seismicResistance": 0.88,
+      "fireResistance": 0.92,
+      "collapseThreshold": 0.89,
+      "replacementValue": 840000000,
+      "nearestRoadNode": "road_node_070",
+      "districtId": "district_school",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 65
+    },
+    {
+      "id": "building_056",
+      "name": "West Old Town Row Houses 01",
+      "type": "old_residential",
+      "position": {
+        "x": 163,
+        "z": 585
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1962,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.22,
+      "fireResistance": 0.14,
+      "collapseThreshold": 0.31,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_043",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 55
+    },
+    {
+      "id": "building_057",
+      "name": "West Old Town Row Houses 02",
+      "type": "old_residential",
+      "position": {
+        "x": 187,
+        "z": 585
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1965,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.25,
+      "fireResistance": 0.17,
+      "collapseThreshold": 0.335,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_043",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 67
+    },
+    {
+      "id": "building_058",
+      "name": "West Old Town Row Houses 03",
+      "type": "old_residential",
+      "position": {
+        "x": 163,
+        "z": 621
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1968,
+      "occupancy": 12,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.28,
+      "fireResistance": 0.2,
+      "collapseThreshold": 0.36,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_045",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 79
+    },
+    {
+      "id": "building_059",
+      "name": "West Old Town Row Houses 04",
+      "type": "old_residential",
+      "position": {
+        "x": 187,
+        "z": 621
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1971,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.31,
+      "fireResistance": 0.23,
+      "collapseThreshold": 0.385,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_045",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 91
+    },
+    {
+      "id": "building_060",
+      "name": "West Old Town Row Houses 05",
+      "type": "old_residential",
+      "position": {
+        "x": 163,
+        "z": 657
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1974,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.34,
+      "fireResistance": 0.26,
+      "collapseThreshold": 0.41,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_047",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 103
+    },
+    {
+      "id": "building_061",
+      "name": "West Old Town Row Houses 06",
+      "type": "old_residential",
+      "position": {
+        "x": 187,
+        "z": 657
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1977,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.37,
+      "fireResistance": 0.29,
+      "collapseThreshold": 0.435,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_047",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 115
+    },
+    {
+      "id": "building_062",
+      "name": "West Old Town Row Houses 07",
+      "type": "old_residential",
+      "position": {
+        "x": 163,
+        "z": 693
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1980,
+      "occupancy": 6,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.4,
+      "fireResistance": 0.14,
+      "collapseThreshold": 0.46,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_056",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 55
+    },
+    {
+      "id": "building_063",
+      "name": "West Old Town Row Houses 08",
+      "type": "old_residential",
+      "position": {
+        "x": 187,
+        "z": 693
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1964,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.43,
+      "fireResistance": 0.17,
+      "collapseThreshold": 0.31,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_056",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 67
+    },
+    {
+      "id": "building_064",
+      "name": "West Old Town Row Houses 09",
+      "type": "old_residential",
+      "position": {
+        "x": 163,
+        "z": 729
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1967,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.22,
+      "fireResistance": 0.2,
+      "collapseThreshold": 0.335,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_059",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 79
+    },
+    {
+      "id": "building_065",
+      "name": "West Old Town Row Houses 10",
+      "type": "old_residential",
+      "position": {
+        "x": 187,
+        "z": 729
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1970,
+      "occupancy": 12,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.25,
+      "fireResistance": 0.23,
+      "collapseThreshold": 0.36,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_059",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 91
+    },
+    {
+      "id": "building_066",
+      "name": "West Old Town Row Houses 11",
+      "type": "old_residential",
+      "position": {
+        "x": 163,
+        "z": 765
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1973,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.28,
+      "fireResistance": 0.26,
+      "collapseThreshold": 0.385,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_061",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 103
+    },
+    {
+      "id": "building_067",
+      "name": "West Old Town Row Houses 12",
+      "type": "old_residential",
+      "position": {
+        "x": 187,
+        "z": 765
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1976,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.31,
+      "fireResistance": 0.29,
+      "collapseThreshold": 0.41,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_061",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 115
+    },
+    {
+      "id": "building_068",
+      "name": "East Old Town Row Houses 01",
+      "type": "old_residential",
+      "position": {
+        "x": 413,
+        "z": 585
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1979,
+      "occupancy": 6,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.34,
+      "fireResistance": 0.14,
+      "collapseThreshold": 0.435,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_044",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 55
+    },
+    {
+      "id": "building_069",
+      "name": "East Old Town Row Houses 02",
+      "type": "old_residential",
+      "position": {
+        "x": 437,
+        "z": 585
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1963,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.37,
+      "fireResistance": 0.17,
+      "collapseThreshold": 0.46,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_044",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 67
+    },
+    {
+      "id": "building_070",
+      "name": "East Old Town Row Houses 03",
+      "type": "old_residential",
+      "position": {
+        "x": 413,
+        "z": 621
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1966,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.4,
+      "fireResistance": 0.2,
+      "collapseThreshold": 0.31,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_046",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 79
+    },
+    {
+      "id": "building_071",
+      "name": "East Old Town Row Houses 04",
+      "type": "old_residential",
+      "position": {
+        "x": 437,
+        "z": 621
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1969,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.43,
+      "fireResistance": 0.23,
+      "collapseThreshold": 0.335,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_046",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 91
+    },
+    {
+      "id": "building_072",
+      "name": "East Old Town Row Houses 05",
+      "type": "old_residential",
+      "position": {
+        "x": 413,
+        "z": 657
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1972,
+      "occupancy": 12,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.22,
+      "fireResistance": 0.26,
+      "collapseThreshold": 0.36,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_048",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 103
+    },
+    {
+      "id": "building_073",
+      "name": "East Old Town Row Houses 06",
+      "type": "old_residential",
+      "position": {
+        "x": 437,
+        "z": 657
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1975,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.25,
+      "fireResistance": 0.29,
+      "collapseThreshold": 0.385,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_048",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 115
+    },
+    {
+      "id": "building_074",
+      "name": "East Old Town Row Houses 07",
+      "type": "old_residential",
+      "position": {
+        "x": 413,
+        "z": 693
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1978,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.28,
+      "fireResistance": 0.14,
+      "collapseThreshold": 0.41,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_057",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 55
+    },
+    {
+      "id": "building_075",
+      "name": "East Old Town Row Houses 08",
+      "type": "old_residential",
+      "position": {
+        "x": 437,
+        "z": 693
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1962,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.31,
+      "fireResistance": 0.17,
+      "collapseThreshold": 0.435,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_057",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 67
+    },
+    {
+      "id": "building_076",
+      "name": "East Old Town Row Houses 09",
+      "type": "old_residential",
+      "position": {
+        "x": 413,
+        "z": 729
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1965,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.34,
+      "fireResistance": 0.2,
+      "collapseThreshold": 0.46,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_060",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 79
+    },
+    {
+      "id": "building_077",
+      "name": "East Old Town Row Houses 10",
+      "type": "old_residential",
+      "position": {
+        "x": 437,
+        "z": 729
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 6.6,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1968,
+      "occupancy": 8,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.42,
+        "elderly": 0.4,
+        "mobilityImpaired": 0.1
+      },
+      "seismicResistance": 0.37,
+      "fireResistance": 0.23,
+      "collapseThreshold": 0.31,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_060",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 91
+    },
+    {
+      "id": "building_078",
+      "name": "East Old Town Row Houses 11",
+      "type": "old_residential",
+      "position": {
+        "x": 413,
+        "z": 765
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.2,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1971,
+      "occupancy": 6,
+      "populationProfile": {
+        "children": 0.1,
+        "adults": 0.46,
+        "elderly": 0.36,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.4,
+      "fireResistance": 0.26,
+      "collapseThreshold": 0.335,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_062",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 103
+    },
+    {
+      "id": "building_079",
+      "name": "East Old Town Row Houses 12",
+      "type": "old_residential",
+      "position": {
+        "x": 437,
+        "z": 765
+      },
+      "size": {
+        "width": 18,
+        "depth": 22
+      },
+      "height": 7.8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1974,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.06,
+        "adults": 0.4,
+        "elderly": 0.42,
+        "mobilityImpaired": 0.12
+      },
+      "seismicResistance": 0.43,
+      "fireResistance": 0.29,
+      "collapseThreshold": 0.36,
+      "replacementValue": 174000000,
+      "nearestRoadNode": "road_node_062",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 115
+    },
+    {
+      "id": "building_080",
+      "name": "Old Town Community Hall",
+      "type": "public",
+      "position": {
+        "x": 120,
+        "z": 875
+      },
+      "size": {
+        "width": 54,
+        "depth": 38
+      },
+      "height": 10,
+      "floors": 2,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 1982,
+      "occupancy": 12,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.76,
+      "fireResistance": 0.84,
+      "collapseThreshold": 0.8,
+      "replacementValue": 1436000000,
+      "nearestRoadNode": "road_node_073",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 80,
+      "yearRetrofitted": 2014
+    },
+    {
+      "id": "building_081",
+      "name": "Old Town Craft House",
+      "type": "public",
+      "position": {
+        "x": 430,
+        "z": 890
+      },
+      "size": {
+        "width": 48,
+        "depth": 40
+      },
+      "height": 8,
+      "floors": 2,
+      "construction": "wood",
+      "yearBuilt": 1974,
+      "occupancy": 12,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.43,
+      "fireResistance": 0.33,
+      "collapseThreshold": 0.53,
+      "replacementValue": 845000000,
+      "nearestRoadNode": "road_node_081",
+      "districtId": "district_old_town",
+      "groundZoneId": "ground_zone_002",
+      "evacuationDelaySeconds": 95
+    },
+    {
+      "id": "building_082",
+      "name": "Central Park Service Pavilion",
+      "type": "public",
+      "position": {
+        "x": 745,
+        "z": 610
+      },
+      "size": {
+        "width": 28,
+        "depth": 22
+      },
+      "height": 6,
+      "floors": 1,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2018,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.89,
+      "fireResistance": 0.91,
+      "collapseThreshold": 0.89,
+      "replacementValue": 216000000,
+      "nearestRoadNode": "road_node_040",
+      "districtId": "district_park",
+      "groundZoneId": "ground_zone_003",
+      "evacuationDelaySeconds": 30
+    },
+    {
+      "id": "building_083",
+      "name": "Aoba Metal Workshop",
+      "type": "factory",
+      "position": {
+        "x": 610,
+        "z": 850
+      },
+      "size": {
+        "width": 65,
+        "depth": 56
+      },
+      "height": 14,
+      "floors": 2,
+      "construction": "steel",
+      "yearBuilt": 1986,
+      "occupancy": 40,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.85,
+        "elderly": 0.09,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.58,
+      "fireResistance": 0.53,
+      "collapseThreshold": 0.65,
+      "replacementValue": 2184000000,
+      "nearestRoadNode": "road_node_075",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 105
+    },
+    {
+      "id": "building_084",
+      "name": "South Machinery Works",
+      "type": "factory",
+      "position": {
+        "x": 715,
+        "z": 850
+      },
+      "size": {
+        "width": 68,
+        "depth": 56
+      },
+      "height": 12,
+      "floors": 2,
+      "construction": "steel",
+      "yearBuilt": 1992,
+      "occupancy": 32,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.85,
+        "elderly": 0.09,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.64,
+      "fireResistance": 0.58,
+      "collapseThreshold": 0.7,
+      "replacementValue": 2285000000,
+      "nearestRoadNode": "road_node_068",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 100
+    },
+    {
+      "id": "building_085",
+      "name": "Aoba Timber Workshop",
+      "type": "factory",
+      "position": {
+        "x": 610,
+        "z": 915
+      },
+      "size": {
+        "width": 65,
+        "depth": 46
+      },
+      "height": 10,
+      "floors": 1,
+      "construction": "wood",
+      "yearBuilt": 1978,
+      "occupancy": 25,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.85,
+        "elderly": 0.09,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.39,
+      "fireResistance": 0.22,
+      "collapseThreshold": 0.49,
+      "replacementValue": 658000000,
+      "nearestRoadNode": "road_node_082",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 95
+    },
+    {
+      "id": "building_086",
+      "name": "South Food Processing Center",
+      "type": "factory",
+      "position": {
+        "x": 715,
+        "z": 915
+      },
+      "size": {
+        "width": 68,
+        "depth": 46
+      },
+      "height": 16,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2001,
+      "occupancy": 20,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.85,
+        "elderly": 0.09,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.76,
+      "fireResistance": 0.82,
+      "collapseThreshold": 0.81,
+      "replacementValue": 3284000000,
+      "nearestRoadNode": "road_node_083",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 110
+    },
+    {
+      "id": "building_087",
+      "name": "East Parts Workshop",
+      "type": "factory",
+      "position": {
+        "x": 850,
+        "z": 850
+      },
+      "size": {
+        "width": 66,
+        "depth": 56
+      },
+      "height": 11,
+      "floors": 1,
+      "construction": "steel",
+      "yearBuilt": 1989,
+      "occupancy": 18,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.85,
+        "elderly": 0.09,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.6,
+      "fireResistance": 0.55,
+      "collapseThreshold": 0.67,
+      "replacementValue": 1109000000,
+      "nearestRoadNode": "road_node_070",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 85
+    },
+    {
+      "id": "building_088",
+      "name": "Aoba Packing Warehouse",
+      "type": "factory",
+      "position": {
+        "x": 910,
+        "z": 915
+      },
+      "size": {
+        "width": 46,
+        "depth": 40
+      },
+      "height": 10,
+      "floors": 2,
+      "construction": "steel",
+      "yearBuilt": 1995,
+      "occupancy": 15,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.85,
+        "elderly": 0.09,
+        "mobilityImpaired": 0.05
+      },
+      "seismicResistance": 0.66,
+      "fireResistance": 0.56,
+      "collapseThreshold": 0.71,
+      "replacementValue": 1104000000,
+      "nearestRoadNode": "road_node_085",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 90
+    },
+    {
+      "id": "building_089",
+      "name": "South Emergency Community Center",
+      "type": "public",
+      "position": {
+        "x": 850,
+        "z": 915
+      },
+      "size": {
+        "width": 50,
+        "depth": 42
+      },
+      "height": 12,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2016,
+      "occupancy": 20,
+      "populationProfile": {
+        "children": 0.08,
+        "adults": 0.57,
+        "elderly": 0.27,
+        "mobilityImpaired": 0.08
+      },
+      "seismicResistance": 0.89,
+      "fireResistance": 0.93,
+      "collapseThreshold": 0.9,
+      "replacementValue": 2205000000,
+      "nearestRoadNode": "road_node_085",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 60
+    },
+    {
+      "id": "building_090",
+      "name": "South Workshop Administration",
+      "type": "office",
+      "position": {
+        "x": 915,
+        "z": 850
+      },
+      "size": {
+        "width": 42,
+        "depth": 56
+      },
+      "height": 14,
+      "floors": 3,
+      "construction": "reinforced_concrete",
+      "yearBuilt": 2009,
+      "occupancy": 10,
+      "populationProfile": {
+        "children": 0.01,
+        "adults": 0.9,
+        "elderly": 0.06,
+        "mobilityImpaired": 0.03
+      },
+      "seismicResistance": 0.81,
+      "fireResistance": 0.87,
+      "collapseThreshold": 0.84,
+      "replacementValue": 2470000000,
+      "nearestRoadNode": "road_node_077",
+      "districtId": "district_industrial",
+      "groundZoneId": "ground_zone_004",
+      "evacuationDelaySeconds": 80
+    }
+  ],
+  "shelters": [
+    {
+      "id": "shelter_001",
+      "name": "Aoba Central Park",
+      "position": {
+        "x": 675,
+        "z": 675
+      },
+      "capacity": 900,
+      "roadNode": "road_node_068",
+      "type": "park",
+      "bounds": {
+        "minX": 560,
+        "maxX": 790,
+        "minZ": 560,
+        "maxZ": 790
+      }
+    },
+    {
+      "id": "shelter_002",
+      "name": "Aoba East Primary School Shelter",
+      "position": {
+        "x": 875,
+        "z": 410
+      },
+      "capacity": 400,
+      "roadNode": "road_node_030",
+      "type": "school",
+      "buildingId": "building_051"
+    },
+    {
+      "id": "shelter_003",
+      "name": "Aoba East Secondary School Shelter",
+      "position": {
+        "x": 875,
+        "z": 635
+      },
+      "capacity": 350,
+      "roadNode": "road_node_041",
+      "type": "school",
+      "buildingId": "building_053"
+    },
+    {
+      "id": "shelter_004",
+      "name": "Old Town Community Shelter",
+      "position": {
+        "x": 120,
+        "z": 875
+      },
+      "capacity": 120,
+      "roadNode": "road_node_073",
+      "type": "public_facility",
+      "buildingId": "building_080"
+    },
+    {
+      "id": "shelter_005",
+      "name": "Aoba Station North Plaza",
+      "position": {
+        "x": 425,
+        "z": 115
+      },
+      "capacity": 180,
+      "roadNode": "road_node_004",
+      "type": "park",
+      "bounds": {
+        "minX": 395,
+        "maxX": 465,
+        "minZ": 75,
+        "maxZ": 155
+      }
+    },
+    {
+      "id": "shelter_006",
+      "name": "Aoba West Civic Shelter",
+      "position": {
+        "x": 115,
+        "z": 425
+      },
+      "capacity": 250,
+      "roadNode": "road_node_026",
+      "type": "public_facility",
+      "buildingId": "building_021"
+    },
+    {
+      "id": "shelter_007",
+      "name": "South Emergency Shelter",
+      "position": {
+        "x": 850,
+        "z": 915
+      },
+      "capacity": 200,
+      "roadNode": "road_node_085",
+      "type": "public_facility",
+      "buildingId": "building_089"
+    }
+  ],
+  "disasterScenarios": [
+    {
+      "id": "earthquake_default",
+      "type": "earthquake",
+      "name": "Aoba Direct Earthquake",
+      "magnitude": 7.1,
+      "epicenter": {
+        "x": 420,
+        "z": 610
+      },
+      "baseIntensity": 0.9,
+      "intensityFalloff": 0.0006,
+      "durationSeconds": 40,
+      "aftershockProbability": 0.15,
+      "fireIgnitionProbability": 0.04
+    }
+  ]
+}

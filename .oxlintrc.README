@@ -1,0 +1,13 @@
+Two rules are switched off deliberately:
+
+  unicorn/no-new-array
+    `new Array(n)` is intentional pre-allocation on hot paths (agent buckets,
+    shelter tables, the loader's spatial grid). The suggested alternatives
+    either allocate differently or are slower; every use is filled immediately.
+
+  react/immutability (src/components/*.tsx only)
+    The renderer deliberately mutates memoised caches and Three.js objects
+    inside `useFrame`, which runs outside React's render phase. This is the
+    architecture the simulation requires: 2,900 agents and 460 buildings are
+    updated by writing into pre-allocated arrays and instance matrices, never
+    through React state. The rule cannot tell `useFrame` from a render body.

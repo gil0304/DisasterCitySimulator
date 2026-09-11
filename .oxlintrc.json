@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "unicorn/no-new-array": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/components/*.tsx"],
+      "rules": {
+        "react/immutability": "off"
+      }
+    }
+  ]
+}
