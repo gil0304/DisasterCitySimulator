@@ -8,6 +8,6 @@
 
 ## 公開メモ
 
+- 公開URL: https://disaster-city.lolipop-now.app
 - 種別: React / Vite / Three.jsの静的Webアプリ
 - 注意: 実在都市の被害予測や工学計算を行うものではありません
-
